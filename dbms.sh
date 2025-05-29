@@ -37,3 +37,33 @@ pause() {
   read -n1 -p "Press any key to continue..."
 }
 
+
+create_table() {
+  read -p "Table name: " tname
+  tfile="$1/$tname.table"
+  if [[ -f "$tfile" ]]; then
+    echo "Table already exists!"
+    return
+  fi
+  read -p "Columns (e.g. id:name:email): " cols
+  echo "$cols" > "$tfile"
+  touch "$1/$tname.data"
+  read -p "Primary key column: " pk
+  echo "$pk" >> "$tfile"
+  echo "Table '$tname' created."
+  pause
+}
+
+list_tables() {
+  echo "Tables:"
+  for f in "$1"/*.table; do
+    [[ -e "$f" ]] && basename "$f" .table
+  done
+  pause
+}
+
+drop_table() {
+  read -p "Table to delete: " t
+  rm -f "$1/$t.table" "$1/$t.data" && echo "Deleted $t" || echo "Not found."
+  pause
+}
