@@ -124,3 +124,34 @@ drop_table() {
   rm -f "$1/$t.table" "$1/$t.data" && echo "Deleted $t" || echo "Not found."
   pause
 }
+
+insert_row() {
+  read -p "Table name: " t
+  tfile="$1/$t.table"
+  dfile="$1/$t.data"
+  if [[ ! -f "$tfile" ]]; then
+    echo "Table not found."
+    return
+  fi
+  cols=$(head -n1 "$tfile")
+  pk=$(tail -n1 "$tfile")
+  IFS=":" read -ra col_arr <<< "$cols"
+  read -p "Values ($cols): " input
+  IFS=":" read -ra val_arr <<< "$input"
+  if [[ ${#col_arr[@]} -ne ${#val_arr[@]} ]]; then
+    echo "Column count mismatch!"
+    return
+  fi
+
+  pk_idx=$(get_index "$pk" "${col_arr[@]}")
+  pk_val="${val_arr[$pk_idx]}"
+
+  if grep -q "^$pk_val:" "$dfile"; then
+    echo "Primary key value already exists!"
+    return
+  fi
+
+  echo "$input" >> "$dfile"
+  echo "Row inserted."
+  pause
+}
