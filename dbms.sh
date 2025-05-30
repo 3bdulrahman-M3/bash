@@ -37,6 +37,63 @@ pause() {
   read -n1 -p "Press any key to continue..."
 }
 
+create_db() {
+  read -p "Enter DB name: " name
+  if [[ -d "$DB_DIR/$name" ]]; then
+    echo "Database already exists."
+  else
+    mkdir "$DB_DIR/$name"
+    echo "Database '$name' created."
+  fi
+  pause
+}
+
+list_dbs() {
+  echo "Databases:"
+  ls "$DB_DIR"
+  pause
+}
+
+drop_db() {
+  read -p "Enter DB to delete: " name
+  if [[ -d "$DB_DIR/$name" ]]; then
+    rm -r "$DB_DIR/$name"
+    echo "Deleted $name."
+  else
+    echo "Database not found."
+  fi
+  pause
+}
+
+connect_db() {
+  read -p "Enter DB to connect: " name
+  if [[ -d "$DB_DIR/$name" ]]; then
+    table_menu "$DB_DIR/$name"
+  else
+    echo "Database not found."
+    pause
+  fi
+}
+
+table_menu() {
+  local db="$1"
+  selected=0
+  while true; do
+    show_menu "${table_menu_items[@]}"
+    handle_input ${#table_menu_items[@]} && {
+      case $selected in
+        0) create_table "$db" ;;
+        1) list_tables "$db" ;;
+        2) drop_table "$db" ;;
+        3) insert_row "$db" ;;
+        4) select_data "$db" ;;
+        5) delete_row "$db" ;;
+        6) update_row "$db" ;;
+        7) break ;;
+      esac
+    }
+  done
+}
 
 create_table() {
   read -p "Table name: " tname
