@@ -180,3 +180,20 @@ select_data() {
   fi
   pause
 }
+
+delete_row() {
+  read -p "Table name: " t
+  tfile="$1/$t.table"
+  dfile="$1/$t.data"
+  if [[ ! -f "$tfile" ]]; then
+    echo "Table not found."
+    return
+  fi
+  pk=$(tail -n1 "$tfile")
+  idx=$(get_index "$pk" $(head -n1 "$tfile" | tr ':' ' '))
+  read -p "Enter PK to delete: " val
+  awk -F: -v idx=$((idx+1)) -v v="$val" '$idx!=v' "$dfile" > "$dfile.tmp" && mv "$dfile.tmp" "$dfile"
+  echo "Row deleted (if existed)."
+  pause
+}
+
