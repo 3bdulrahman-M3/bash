@@ -232,3 +232,33 @@ update_row() {
   pause
 }
 
+get_index() {
+  local name="$1"
+  shift
+  local arr=("$@")
+  for i in "${!arr[@]}"; do
+    if [[ "${arr[$i]}" == "$name" ]]; then
+      echo "$i"
+      return
+    fi
+  done
+  echo -1
+}
+
+main_menu() {
+  selected=0
+  while true; do
+    show_menu "${main_menu_items[@]}"
+    handle_input ${#main_menu_items[@]} && {
+      case $selected in
+        0) create_db ;;
+        1) list_dbs ;;
+        2) connect_db ;;
+        3) drop_db ;;
+        4) echo "Goodbye!"; exit ;;
+      esac
+    }
+  done
+}
+
+main_menu
