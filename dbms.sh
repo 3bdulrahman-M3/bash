@@ -155,3 +155,28 @@ insert_row() {
   echo "Row inserted."
   pause
 }
+
+select_data() {
+  read -p "Table name: " t
+  tfile="$1/$t.table"
+  dfile="$1/$t.data"
+  if [[ ! -f "$tfile" ]]; then
+    echo "Table not found."
+    return
+  fi
+  cols=$(head -n1 "$tfile")
+  IFS=":" read -ra col_arr <<< "$cols"
+  read -p "Column to select (* for all): " cname
+  if [[ "$cname" == "*" ]]; then
+    echo "$cols"
+    cat "$dfile"
+  else
+    idx=$(get_index "$cname" "${col_arr[@]}")
+    if [[ $idx -eq -1 ]]; then
+      echo "Invalid column."
+      return
+    fi
+    cut -d':' -f$((idx+1)) "$dfile"
+  fi
+  pause
+}
