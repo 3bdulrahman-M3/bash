@@ -197,3 +197,38 @@ delete_row() {
   pause
 }
 
+update_row() {
+  read -p "Table name: " t
+  tfile="$1/$t.table"
+  dfile="$1/$t.data"
+  if [[ ! -f "$tfile" ]]; then
+    echo "Table not found."
+    return
+  fi
+  cols=$(head -n1 "$tfile")
+  pk=$(tail -n1 "$tfile")
+  IFS=":" read -ra col_arr <<< "$cols"
+  pk_idx=$(get_index "$pk" "${col_arr[@]}")
+  read -p "Enter PK value: " pk_val
+  read -p "Column to update: " col
+  col_idx=$(get_index "$col" "${col_arr[@]}")
+  if [[ $col_idx -eq -1 ]]; then
+    echo "Invalid column."
+    return
+  fi
+  read -p "New value: " new_val
+  tmp=$(mktemp)
+  while IFS= read -r line; do
+    IFS=":" read -ra row <<< "$line"
+    if [[ "${row[$pk_idx]}" == "$pk_val" ]]; then
+      row[$col_idx]="$new_val"
+      (IFS=:; echo "${row[*]}") >> "$tmp"
+    else
+      echo "$line" >> "$tmp"
+    fi
+  done < "$dfile"
+  mv "$tmp" "$dfile"
+  echo "Row updated."
+  pause
+}
+
